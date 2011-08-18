@@ -7,4 +7,9 @@ Please remember, SOME TRANSLATIONS DEPENDS ON TARGET USER LANGUAGE (e.g. automat
 
 Do not translate large amounts of data like away.php or aboutrating.php. Post HTML code in modules/{filename}/index_en.php, it will be used for template system.
 
+Refer to language system API:
+http://dev.kinokpk.com/viewtopic.php?f=43&t=2708
+
+It will be best pleasure if you add language file to your translation!
+
 Thanks.
