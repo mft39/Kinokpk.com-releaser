@@ -1,3 +1,5 @@
+WILDCARD TO TRANSLATION (Russian symbols): [а-яА-Я]
+
 Translate these files INLINE TO ENGLISH via $REL_LANG->_(),
 NOT VIA $REL_LANG->say_by_key();
 
