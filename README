@@ -1,0 +1,10 @@
+Translate these files INLINE TO ENGLISH via $REL_LANG->_(),
+NOT VIA $REL_LANG->say_by_key();
+
+Please USE WILDCARS IF POSSIBLE, like $REL_LANG->('Year is %s',date('Y'));
+
+Please remember, SOME TRANSLATIONS DEPENDS ON TARGET USER LANGUAGE (e.g. automatically sended system messages or friends requests), use $REL_LANG->_to()) !
+
+Do not translate large amounts of data like away.php or aboutrating.php. Post HTML code in modules/{filename}/index_en.php, it will be used for template system.
+
+Thanks.
