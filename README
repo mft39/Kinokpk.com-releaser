@@ -3,7 +3,7 @@ WILDCARD TO TRANSLATION (Russian symbols): [а-яА-Я]
 Translate these files INLINE TO ENGLISH via $REL_LANG->_(),
 NOT VIA $REL_LANG->say_by_key();
 
-Please USE WILDCARS IF POSSIBLE, like $REL_LANG->('Year is %s',date('Y'));
+Please USE WILDCARDS IF POSSIBLE, like $REL_LANG->('Year is %s',date('Y'));
 
 Please remember, SOME TRANSLATIONS DEPENDS ON TARGET USER LANGUAGE (e.g. automatically sended system messages or friends requests), use $REL_LANG->_to()) !
 
@@ -11,6 +11,8 @@ Do not translate large amounts of data like away.php or aboutrating.php. Post HT
 
 Refer to language system API:
 http://dev.kinokpk.com/viewtopic.php?f=43&t=2708
+Refer to documented language system source code:
+https://github.com/ZonD80/Kinokpk.com-releaser/blob/translation/to_translate/classes/lang/lang.class.php
 
 It will be best pleasure if you add language file to your translation!
 
