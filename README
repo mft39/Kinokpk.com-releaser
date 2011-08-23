@@ -7,7 +7,7 @@ Please USE WILDCARDS IF POSSIBLE, like $REL_LANG->('Year is %s',date('Y'));
 
 Please remember, SOME TRANSLATIONS DEPENDS ON TARGET USER LANGUAGE (e.g. automatically sended system messages or friends requests), use $REL_LANG->_to()) !
 
-Do not translate large amounts of data like away.php or aboutrating.php. Post HTML code in modules/{filename}/index_en.php, it will be used for template system.
+Do not translate large amounts of data like away.php or aboutrating.php. Post HTML code in modules/{filename}/en.lang, it will be used for template system.
 
 Refer to language system API:
 http://dev.kinokpk.com/viewtopic.php?f=43&t=2708
