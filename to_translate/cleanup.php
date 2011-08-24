@@ -4,11 +4,10 @@
  * @license GNU GPLv3 http://opensource.org/licenses/gpl-3.0.html
  * @package Kinokpk.com releaser
  * @author ZonD80 <admin@kinokpk.com>
- * @copyright (C) 2008-now, ZonD80, Germany, TorrentsBook.com, hander
+ * @copyright (C) 2008-now, ZonD80, Germany, TorrentsBook.com
  * @link http://dev.kinokpk.com
  */
 header("Content-Type: image/gif");
-
 @set_time_limit(0);
 @ignore_user_abort(1);
 date_default_timezone_set('UTC');
@@ -25,6 +24,7 @@ $time = time();
 require_once(ROOT_PATH . 'classes/database/database.class.php');
 $REL_DB = new REL_DB($db);
 unset($db);
+//$REL_DB->debug();
 
 $REL_CONFIGrow = $REL_DB->query("SELECT * FROM cache_stats WHERE cache_name IN ('sitename','defaultbaseurl','siteemail','default_language','smtptype')");
 
@@ -51,25 +51,27 @@ $REL_SEO = new REL_SEO();
 require_once(ROOT_PATH . 'classes/lang/lang.class.php');
 $REL_LANG = new REL_LANG($REL_CONFIG);
 
-$cronrow = $REL_DB->query("SELECT * FROM cron WHERE cron_name IN ('in_cleanup','last_cleanup','autoclean_interval','max_dead_torrent_time','pm_delete_sys_days','pm_delete_user_days','signup_timeout','ttl_days','delete_votes','rating_freetime','rating_enabled','rating_perleech','rating_perseed','rating_checktime','rating_dislimit','promote_rating','rating_max')") or sqlerr(__FILE__,__LINE__);
+$cronrow = $REL_DB->query("SELECT * FROM cron WHERE cron_name IN ('in_cleanup','autoclean_interval','max_dead_torrent_time','pm_delete_sys_days','pm_delete_user_days','signup_timeout','ttl_days','announce_interval','delete_votes','rating_freetime','rating_enabled','rating_perleech','rating_perseed','rating_checktime','rating_dislimit','promote_rating','rating_max')") or sqlerr(__FILE__,__LINE__);
 
 while ($cronres = mysql_fetch_assoc($cronrow)) $REL_CRON[$cronres['cron_name']] = $cronres['cron_value'];
 
 if ($REL_CRON['in_cleanup']) die('Cleanup already running');
+
 $REL_DB->query("UPDATE cron SET cron_value=".time()." WHERE cron_name='last_cleanup'") or sqlerr(__FILE__,__LINE__);
 
 $REL_DB->query("UPDATE cron SET cron_value=1 WHERE cron_name='in_cleanup'") or sqlerr(__FILE__,__LINE__);
 
 $torrents = array();
-$res = $REL_DB->query('SELECT fid,seeders,leechers,mtime FROM xbt_files') or sqlerr(__FILE__,__LINE__);
+$res = $REL_DB->query('SELECT fid,seeders,leechers FROM xbt_files') or sqlerr(__FILE__,__LINE__);
 while ($row = mysql_fetch_assoc($res)) {
-	$torrents[$row['fid']] = $row;
+	$torrents["seeders = {$row['seeders']}, leechers={$row['leechers']}, lastchecked={$time}"][] = $row['fid'];
 }
 
 if ($torrents) {
-	foreach ($torrents AS $id=>$torrent) {
-		$REL_DB->query("UPDATE trackers SET seeders = ".(int)$torrent['seeders'].", leechers = ".(int)$torrent['leechers'].", lastchecked = {$torrent['mtime']} WHERE torrent = $id AND tracker='localhost'") or sqlerr(__FILE__,__LINE__);
-		$ids[] = $id;
+	$ids = array();
+	foreach ($torrents AS $to_set=> $to_ids) {
+		$REL_DB->query("UPDATE trackers SET $to_set WHERE torrent IN (".implode(',',$to_ids).") AND tracker='localhost'") or sqlerr(__FILE__,__LINE__);
+		$ids = array_merge($ids,$to_ids);
 	}
 }
 
@@ -77,8 +79,15 @@ $REL_DB->query("UPDATE trackers SET seeders=0, leechers=0, lastchecked=$time WHE
 
 $res = $REL_DB->query("SELECT torrent, SUM(seeders) AS seeders, SUM(leechers) AS leechers FROM trackers GROUP BY torrent") or sqlerr(__FILE__,__LINE__);
 
+$torrents = array();
 while ($row = mysql_fetch_assoc($res)) {
-	$REL_DB->query("UPDATE torrents SET seeders={$row['seeders']}, leechers={$row['leechers']} WHERE id={$row['torrent']}") or sqlerr(__FILE__,__LINE__);
+	$torrents["seeders={$row['seeders']}, leechers={$row['leechers']}"][] = $row['torrent'];
+}
+if ($torrents) {
+	foreach ($torrents AS $to_set=> $to_ids) {
+		$REL_DB->query("UPDATE torrents SET $to_set WHERE id IN (".implode(',',$to_ids).")") or sqlerr(__FILE__,__LINE__);
+			
+	}
 }
 /*	//delete inactive user accounts
  $secs = 31*86400;
@@ -123,79 +132,44 @@ if (mysql_num_rows($res) > 0) {
  write_log("Пользователь $arr[username] был отключен системой (5 и более предупреждений)","tracker");
  }
  */
+// Update user ratings MODIFY TO XBT!
+/*
+ if ($REL_CRON['rating_enabled']) {
+ $useridssql = $REL_DB->query("SELECT peers.userid AS id, users.discount FROM peers LEFT JOIN users ON peers.userid=users.id WHERE (".time()."-added)>".($REL_CRON['rating_freetime']*86400)." AND users.class<> ".UC_VIP." AND enabled=1 AND (".time()."-last_checked)>".($REL_CRON['rating_checktime']*60));
+ while ($urow = mysql_fetch_assoc($useridssql)) {
+ $uidsar[] = $urow['id'];
+ $urating[$urow['id']]=array('discount'=>$urow['discount'],'seeding'=>0,'downloaded'=>0);
+ }
+ if ($uidsar) {
+ $uidsar=@implode(',',$uidsar);
+ $seederssql = $REL_DB->query("SELECT SUM(1) AS seeding, userid AS id FROM peers WHERE seeder=1 AND userid IN (".$uidsar.") GROUP BY userid");
+ while ($srow = mysql_fetch_assoc($seederssql)) {
+ $urating[$srow['id']]['seeding']=$srow['seeding'];
+ }
+ $downsql = $REL_DB->query("SELECT SUM(1) AS downloaded, userid AS id FROM snatched LEFT JOIN torrents ON snatched.torrent=torrents.id WHERE snatched.finished=1 AND torrents.free=0 AND NOT FIND_IN_SET(torrents.freefor,userid) AND userid IN (".$uidsar.") AND torrents.owner<>snatched.userid GROUP BY userid");
+ while ($drow = mysql_fetch_assoc($downsql)) {
+ $urating[$drow['id']]['downloaded']=$drow['downloaded'];
+ //if ($drow['downloaded']) print '<h1>Yahooo! '.$drow['id'].'</h1>';
+ }
+ // var_dump(($urating));
+ //print "<hr>";
+ foreach ($urating AS $uid=>$value) {
+ //print($value['discount'].'<br>');
+ if (!$value['downloaded'] && !($value['seeding']+$value['discount'])) continue;
+ elseif ($value['downloaded']>($value['seeding']+$value['discount'])) $rateup = -$REL_CRON['rating_perleech'];
+ else {
+ $upcount = @round(($value['seeding']+$value['discount'])/$value['downloaded']);
+ if (!$upcount) $upcount=1;
+ $rateup = $REL_CRON['rating_perseed']*$upcount;
+ }
+ $REL_DB->query("UPDATE LOW_PRIORITY users SET ratingsum = CASE WHEN ((ratingsum+$rateup>{$REL_CRON['rating_max']}) AND $rateup>0 AND ratingsum<{$REL_CRON['rating_max']}) THEN {$REL_CRON['rating_max']} WHEN ($rateup>0 AND ratingsum>{$REL_CRON['rating_max']}) THEN ratingsum ELSE ratingsum+$rateup END, last_checked=".time()." WHERE id=$uid");
+ }
+ }
+ $REL_DB->query("UPDATE users SET enabled=0, dis_reason='Your rating was too low.' WHERE enabled=1 AND ratingsum<".$REL_CRON['rating_dislimit']);
+ $REL_DB->query("UPDATE users SET enabled=1, dis_reason='' WHERE enabled=0 AND dis_reason='Your rating was too low.' AND ratingsum>=".$REL_CRON['rating_dislimit']);
 
-//
-//RATING SYSTEM (XBT compatibility by hander)
-//
-//$users - select applicable users from db
-//constants init - set initial parameters for right functionathing
-//$xpeers - select only seeding users ($seeding)
-//$active - checks whether user is connected to xbt, else rating is not set for him
-//$dpeers - select only downloaded releases ($downloaded)
-//$per_time - counts what part of full unit will be used (from last cleanup)
-//$units - how many units user grep
-//$rateup - multiplying $unit and $units we'll get actual rating earning
-//
-//To meet high accuracy use crontab instead
-//
+ }*/
 
-$users = $REL_DB->query("SELECT id, discount, ratingsum, last_checked FROM users WHERE (".time()."-added)>".($REL_CRON['rating_freetime']*86400)." AND users.class<> '5' AND enabled=1");	//Отключение обработки рейтинга для опред пользователей (например отключенных,VIP).
-if($users['ratingsum']<$REL_CRON['rating_max']){
-	while ($id_users = mysql_fetch_assoc($users)){
-		//fix it 'users.class<> ".UC_VIP."'
-		//$xpeers = $REL_DB->query("SELECT `active`,`left` FROM xbt_files_users WHERE uid = ".$id_users['id']." ORDER BY active DESC");
-		$xpeers = $REL_DB->query("SELECT `left` FROM xbt_files_users WHERE `active`=1 AND uid = ".$id_users['id']." ORDER BY `left` DESC");
-
-		//constants init
-		$seeding = '0';
-		$downloaded = '0';
-		$active = '0';
-		unset($die);
-
-		while($xprow = mysql_fetch_assoc($xpeers) and empty($die)){
-			$active = '1';			//Определение подключения клиента к системе
-			if($xprow['left']=='0'){
-				$seeding++;
-			} else $die = '1';		// Начисление рейтинга только когда пользователь подключен (DESC, empty($die),$active).
-		}
-
-		if($active == '1'){
-			$dpeers = $REL_DB->query("SELECT COUNT(1) AS downloaded FROM xbt_files_users LEFT JOIN torrents ON xbt_files_users.fid=torrents.id WHERE torrents.free=0 AND NOT FIND_IN_SET(torrents.freefor,uid) AND uid IN (".$id_users['id'].") AND torrents.owner<>xbt_files_users.uid AND `left`=0 GROUP BY uid");
-				while($dprow = mysql_fetch_assoc($dpeers)){
-					$downloaded = $dprow['downloaded'];
-				}
-
-			//Запись промежуточных данных в базу.
-			$REL_DB->query("INSERT INTO users (id,msn,aim) VALUES ({$id_users['id']},{$seeding},{$downloaded}) ON DUPLICATE KEY UPDATE msn = $seeding, aim = $downloaded");
-
-			//Функция вычисления рейтинга
-			$per_time = (time() - $REL_CRON['last_cleanup'])/10800;		//Коэффициент на который умножается колличесво баллов c учетом трех часов (прибавляется за время последней очистки).
-			$units = ($seeding + $id_users['discount']) / ($downloaded!=0 ? $downloaded : 1);	//Колличество баллов подлежащее прибавлению.
-			$units = ($units>=1 ? $units : -$REL_CRON['rating_perleech']);	//Уменьшение рейтинга при надобности.
-			$rateup = $REL_CRON['rating_perseed']*$units*$per_time;		//Результат для записи в базу.
-
-			//Change type of ratingsum column from `int` to `DECIMAL (6,3)`.
-			$REL_DB->query("UPDATE LOW_PRIORITY users SET ratingsum = CASE WHEN ((ratingsum+$rateup>{$REL_CRON['rating_max']}) AND $rateup>0 AND ratingsum<{$REL_CRON['rating_max']}) THEN {$REL_CRON['rating_max']} WHEN ($rateup>0 AND ratingsum>{$REL_CRON['rating_max']}) THEN ratingsum ELSE ratingsum+$rateup END, last_checked=".time()." WHERE id=".$id_users['id']);
-
-		}
-
-	}
-}
-
-	//Manage 'chill' users
-	$REL_DB->query("UPDATE users SET enabled=0, dis_reason='Your rating was too low.' WHERE enabled=1 AND ratingsum<".$REL_CRON['rating_dislimit']);
-	$REL_DB->query("UPDATE users SET enabled=1, dis_reason='' WHERE enabled=0 AND dis_reason='Your rating was too low.' AND ratingsum>=".$REL_CRON['rating_dislimit']);	
-
-//end rating system
-//
-
-//CleanUp 'xbt_announce_log'
-$m_time = $time - 300;
-$REL_DB->query("DELETE FROM xbt_announce_log WHERE mtime < $m_time");
-//end
-//
- 
- 
 //remove expired warnings
 $now = time();
 $modcomment = sqlesc(date("Y-m-d") . " - Предупреждение снято системой по таймауту.\n");
