@@ -22,7 +22,7 @@ $reltemplatearray = sql_query("SELECT id,name,content FROM reltemplates");
 while ($reltemplate = mysql_fetch_assoc($reltemplatearray)) {
 	$reltemplates[]=$reltemplate;
 }
-if (!$reltemplates) die('<tr><td>Шаблонов в данный момент нет</td></tr></table></div></body></html>');
+if (!$reltemplates) die('<tr><td>'.$REL_LANG->_('There are no description templates yet').'</td></tr></table></div></body></html>');
 
 print('<script language="javascript" type="text/javascript">
 //<![CDATA[
