@@ -72,7 +72,3 @@ if (!$count) { $content = "<div align=\"center\">{$REL_LANG->_('No releases yet'
 	else print $content;
 }
 ?>
-
-
-
-

@@ -1981,6 +1981,7 @@ function torrenttable($res, $variant = "index") {
  * @return string Nice month
  */
 function mkprettymonth($seconds) {
+	global $REL_LANG;
 	$search = array('January','February','March','April','May','June','July','August','September','October','November','December');
 		$replace = array($REL_LANG->_('Jan'),
 	$REL_LANG->_('Feb'),
@@ -2447,7 +2448,7 @@ function generate_lang_js() {
  * Outputs beta warning. Default false.
  * @var boolean
  */
-define ("BETA", false);
+define ("BETA", true);
 /**
  * Beta warning as it is
  * @var string
@@ -2457,5 +2458,5 @@ define ("BETA_NOTICE", "\n<br />This isn't complete release of source!");
  * Kinokpk.com releaser's version
  * @var string
  */
-define("RELVERSION","3.38");
+define("RELVERSION","3.40 experimental alpha with xbt support");
 ?>

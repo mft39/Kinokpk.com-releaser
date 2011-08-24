@@ -72,6 +72,4 @@ if ($content===false) {
 
 }
 
-?>
-
-
+?

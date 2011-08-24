@@ -127,8 +127,8 @@ function get_content($text, $option)
 }
 if (!$CURUSER) die('Only users enabled');
 
-if (!isset($_GET['id']) && !isset($_GET['filmname'])) print('<table><tr><td>'.$REL_LANG->_('Enter movie name').':</td><td><form method="get"><input type="text" name="filmname">
-<input type="submit" value="'.$REL_LANG->_('Continue').'" />
+if (!isset($_GET['id']) && !isset($_GET['filmname'])) print('<table><tr><td>Введите название фильма:</td><td><form method="get"><input type="text" name="filmname">
+<input type="submit" value="Продолжить" />
 </form></td></tr></table>');
 
 require_once(ROOT_PATH."classes/parser/Snoopy.class.php");
@@ -139,25 +139,25 @@ if (isset($_GET['filmname'])) {
 	$filmsafe = htmlspecialchars($_GET['filmname']);
 	$page->fetch("http://www.kinopoisk.ru/index.php?kp_query={$film}");
 	$source = $page->results;
-	if (!$source) die($REL_LANG->_('Nothing was found'));
+	if (!$source) die('Nothing found!');
 
-	print("<table><tr><td align=\"center\">{$REL_LANG->_('Searched for "%s" movies',$filmsafe)}</td></tr>");
+	print("<table><tr><td align=\"center\">Найденные по запросу \"$filmsafe\" фильмы</td></tr>");
 
 	$searched = search($source,$film);
-	if (!$searched) die($REL_LANG->_('Nothing was found'));
+	if (!$searched) die('Nothing found!');
 	foreach ($searched as $searchedrow) {
 		print("<tr><td>".$searchedrow."</td></tr>");
 	}
 	print ('</table>');
 }
 elseif (isset($_GET['id']) && $_GET['id'] != '') {
-	if (!is_valid_id($_GET['id'])) die($REL_LANG->_('Invalid ID'));
+	if (!is_valid_id($_GET['id'])) die('Wrong ID');
 	$id = (int)$_GET['id'];
 
 	$page->fetch("http://www.kinopoisk.ru/level/1/film/$id/");
 	$source = $page->results;
 
-	if (!$source) die($REL_LANG->_('Nothing was found'));
+	if (!$source) die('Nothing found!');
 
 	function clear($text){
 		$text = preg_replace("#\t|\r|\x0B|\n#si","",$text);
