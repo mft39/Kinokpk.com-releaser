@@ -110,7 +110,7 @@ if ($requestorid <> NULL) {
 	list($count) = mysql_fetch_array($res);
 
 	if (!$count) {
-		print("<tr><td class=\"colhead\" align=\"center\" colSpan=\"15\" >Нет запросов</td></tr>");
+		print("<tr><td class=\"colhead\" align=\"center\" colSpan=\"15\" >So far nothing</td></tr>");
 		print("<tr><td class=\"index\" colspan=\"15\">");
 		print("<p> There is no requests. Wish <a href=\"".$REL_SEO->make_link('requests','action','new')."\">to make one</a>?</p>");
 		print("</td></tr>");
@@ -123,7 +123,7 @@ if ($requestorid <> NULL) {
 		$res = sql_query("SELECT (SELECT username FROM users WHERE id = filledby) AS filledname, (SELECT class FROM users WHERE id = filledby) AS filledclass, users.class, users.ratingsum, users.username, users.warned, users.donor, users.enabled, requests.filled, requests.filledby, requests.id, requests.userid, requests.request, requests.added, requests.hits, requests.comments, categories.id AS cat_id FROM requests INNER JOIN categories ON requests.cat = categories.id INNER JOIN users ON requests.userid = users.id $query $filtersql $limit") or sqlerr(__FILE__, __LINE__);
 		$num = mysql_num_rows($res);
 
-		print("<form method=get OnSubmit=\"return confirm('Вы уверены?')\" action=\"".$REL_SEO->make_link('viewrequests')."\">\n");
+		print("<form method=get OnSubmit=\"return confirm('Are you sure?')\" action=\"".$REL_SEO->make_link('viewrequests')."\">\n");
 		print("<tr><td class=\"colhead\" align=\"center\">".$REL_LANG->say_by_key('type')."</td><td class=colhead align=left><a href=\"".$REL_SEO->make_link('viewrequests','category',$categ,'filter',$filter,'sort','request')."\" class=altlink_white>".$REL_LANG->say_by_key('request')."</a></td><td class=colhead align=center width=150><a href=\"".$REL_SEO->make_link('viewrequests','category',$categ,'filter',$filter,'sort','added')."\" class=altlink_white>".$REL_LANG->say_by_key('added')."</a></td><td class=colhead align=center>".$REL_LANG->say_by_key('requester')."</td><td class=colhead align=center>".$REL_LANG->say_by_key('filled')."</td><td class=colhead align=center>".$REL_LANG->say_by_key('filled_by')."</td><td class=colhead align=center><a href=" . $_SERVER[PHP_SELF] . "?category=" . $categ . "&filter=" . $filter . "&sort=votes class=altlink_white>".$REL_LANG->say_by_key('votes')."</a></td><td class=colhead align=center><a href=" . $_SERVER[PHP_SELF] . "?category=" . $categ . "&filter=" . $filter . "&sort=comm class=altlink_white>".$REL_LANG->say_by_key('comments')."</a></td>" . (get_privilege('requests_operation',false)?"<td class=colhead align=center>".$REL_LANG->say_by_key('delete')."</td>": "") . "</tr>\n");
 		for ($i = 0; $i < $num; ++$i)
 		{
