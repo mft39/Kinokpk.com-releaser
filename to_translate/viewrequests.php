@@ -24,10 +24,10 @@ if ($_GET["delreq"])
 		sql_query("DELETE FROM addedrequests WHERE requestid IN (" . implode(", ", array_map("sqlesc", $_GET["delreq"])) . ")");
 		sql_query("DELETE FROM notifs WHERE checkid IN (" . implode(", ", array_map("sqlesc", $_GET["delreq"])) . ") AND type='reqcomments'");
 		$REL_CACHE->clearGroupCache('block-req');
-		stderr($REL_LANG->say_by_key('success'), "Запрос успешно удален.<br /><a href=\"".$REL_SEO->make_link('viewrequests')."\">К списку запросов</a>");
+		stderr($REL_LANG->say_by_key('success'), "Request was deleted.<br /><a href=\"".$REL_SEO->make_link('viewrequests')."\">Back to the list</a>");
 	}
 	else
-	stderr($REL_LANG->say_by_key('error'), "У вас нет прав для удаления запросов.");
+	stderr($REL_LANG->say_by_key('error'), "You have no rights to delete request.");
 }
 
 if ((!is_valid_id($_GET['category'])) && ($_GET['category']<>0)) stderr ($REL_LANG->say_by_key('error'),$REL_LANG->say_by_key('invalid_id'));
@@ -40,7 +40,7 @@ $search = (string) $_GET["search"];
 $filter = htmlspecialchars($_GET["filter"]);
 
 print("<table class=\"embedded\" cellspacing=\"0\" cellpadding=\"5\" width=\"100%\" >");
-print("<tr><td class=\"colhead\" align=\"center\" colspan=\"15\">Секция запросов</td></tr>");
+print("<tr><td class=\"colhead\" align=\"center\" colspan=\"15\">Requests</td></tr>");
 print("<tr><td class=\"index\" colspan=\"15\">");
 
 
@@ -55,12 +55,12 @@ $tree= make_tree();
 print gen_select_area('category',$tree,$categ,true);
 
 print("</select>");
-print("&nbsp;<input type=\"submit\" align=\"center\" value=\"Изменить\" style=\"height: 22px\">\n");
+print(" <input type=\"submit\" align=\"center\" value=\"Modify\" style=\"height: 22px\"n");
 print("</form>\n<p />");
 
 print("<form method=\"get\" action=\"".$REL_SEO->make_link('viewrequests')."\">");
 print("<b>Искать запросы: </b><input type=\"text\" size=\"40\" name=\"search\">");
-print("&nbsp;<input type=\"submit\" align=\"center\" value=\"Искать\" style=\"height: 22px\">\n");
+print(" <input type=\"submit\" align=\"center\" value=\"Search\" style=\"height: 22px\">\n");
 print("</form><p></p>");
 
 if ($search)
@@ -112,7 +112,7 @@ if ($requestorid <> NULL) {
 	if (!$count) {
 		print("<tr><td class=\"colhead\" align=\"center\" colSpan=\"15\" >Нет запросов</td></tr>");
 		print("<tr><td class=\"index\" colspan=\"15\">");
-		print("<p>Нет запросов. Желаете <a href=\"".$REL_SEO->make_link('requests','action','new')."\">добавить</a>?</p>");
+		print("<p> There is no requests. Wish <a href=\"".$REL_SEO->make_link('requests','action','new')."\">to make one</a>?</p>");
 		print("</td></tr>");
 	} else {
 
