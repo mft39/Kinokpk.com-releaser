@@ -55,12 +55,12 @@ $tree= make_tree();
 print gen_select_area('category',$tree,$categ,true);
 
 print("</select>");
-print(" <input type=\"submit\" align=\"center\" value=\"Modify\" style=\"height: 22px\"n");
+print("<input type=\"submit\" align=\"center\" value=\"Modify\" style=\"height: 22px\"n");
 print("</form>\n<p />");
 
 print("<form method=\"get\" action=\"".$REL_SEO->make_link('viewrequests')."\">");
-print("<b>Искать запросы: </b><input type=\"text\" size=\"40\" name=\"search\">");
-print(" <input type=\"submit\" align=\"center\" value=\"Search\" style=\"height: 22px\">\n");
+print("<b>Search through requests: </b><input type=\"text\" size=\"40\" name=\"search\">");
+print("<input type=\"submit\" align=\"center\" value=\"Search\" style=\"height: 22px\">\n");
 print("</form><p></p>");
 
 if ($search)
