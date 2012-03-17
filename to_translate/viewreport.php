@@ -32,7 +32,7 @@ if ($_POST['delete'] && $_POST['reports']) {
 }
 //
 
-$REL_TPL->stdhead("Просмотр жалоб на раздачи");
+$REL_TPL->stdhead("Check reports");
 
 $count = get_row_count("report");
 if (!$count) {
@@ -62,12 +62,12 @@ if (!$count) {
         </script>
 
 <center>
-<h1>Поступившие жалобы на раздачи</h1>
+<h1>Reports</h1>
 </center>
 <div align=center>
 <form action="<?=$REL_SEO->make_link('viewreport');?>" method="post"><input
 	type="hidden" name="deleteall" value="deleteall"> <input type="submit"
-	value="Удалить все жалобы" onClick="return confirm('Вы уверены?')"></form>
+	value="Delete reports" onClick="return confirm('Are you sure?')"></form>
 </div>
 <br />
 
@@ -76,19 +76,19 @@ if (!$count) {
 <table border="0" cellspacing="0" width="100%" cellpadding="3">
 	<tr>
 		<td class=colhead>
-		<center>Дата&nbsp;поступления</center>
+		<center>Report date</center>
 		</td>
 		<td class=colhead>
-		<center>Жалоба&nbsp;от</center>
+		<center>Reported&nbsp;by</center>
 		</td>
 		<td class=colhead>
-		<center>Жалоба&nbsp;на&nbsp;торрент</center>
+		<center>Report&nbsp;torrent</center>
 		</td>
 		<td class=colhead>
-		<center>Причина&nbsp;жалобы</center>
+		<center>Reason</center>
 		</td>
 		<td class=colhead>
-		<center><INPUT type="checkbox" title="Выбрать все" value="Выбрать все"
+		<center><INPUT type="checkbox" title="Select all" value="Select all"
 			onClick="this.value=check(document.form1.elements);"></center>
 		</td>
 	</tr>
@@ -113,7 +113,7 @@ if (!$count) {
 			$userclass = $row1["class"];
 
 			if ($username == ""){
-				$username = "<b><font color='red'>Аноним<font></b>";
+				$username = "<b><font color='red'>Anonymous<font></b>";
 			}
 
 			$res2 = sql_query("SELECT id, name FROM torrents WHERE id = $torrentid") or sqlerr(__FILE__, __LINE__);
@@ -123,7 +123,7 @@ if (!$count) {
 				$torrentname = $row2["name"];
 				$torrenturl = "<a target='_blank' href='".$REL_SEO->make_link('details','id',$torrentid,'name',translit($torrentname))."'>$torrentname</a>";
 			} else {
-				$torrenturl = "<b><font color='red'>торрент удален<font></b>";
+				$torrenturl = "<b><font color='red'>Torrent was deleted<font></b>";
 			}
 
 
@@ -133,14 +133,14 @@ if (!$count) {
         <td>$torrenturl</td>
         <td>$motive</td>
         <td align='center'>
-        <INPUT type=\"checkbox\" name=\"reports[]\" title=\"Выбрать\" value=\"".$reportid."\" id=\"checkbox_tbl_".$reportid."\"></td></tr>");
+        <INPUT type=\"checkbox\" name=\"reports[]\" title=\"Choose\" value=\"".$reportid."\" id=\"checkbox_tbl_".$reportid."\"></td></tr>");
 
 		}
 
 	}
 	else
 	{
-		print("<tr><td align='center' colspan='5'>Нет ни одной жалобы на раздачи...</td></tr>");
+		print("<tr><td align='center' colspan='5'>So far there is no reports...</td></tr>");
 	}
 
 	?>
@@ -148,7 +148,7 @@ if (!$count) {
 	<tr>
 		<td class=colhead colspan="5">
 		<div align=right><input type="submit" name="delete"
-			value="Удалить выбранное" onClick="return confirm('Вы уверены?')"></div>
+			value="Delete selected" onClick="return confirm('Are you sure?')"></div>
 		</td>
 	</tr>
 </table>
